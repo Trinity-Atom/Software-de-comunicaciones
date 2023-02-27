@@ -1,9 +1,5 @@
 package seguridadP1;
 
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
 /**Fichero: Principal.java
  * Clase para comprobar el funcionamiento de las otras clases del paquete.
  * Asignatura: SEG
@@ -74,7 +70,7 @@ public class Principal {
 								nombreFicheroCifrado = sc.next();
 								
 								// Cifrar
-								simetrico.cifrar(args[0]+nombreFicheroClave, args[0]+mensaje, args[0]+nombreFicheroCifrado);
+								simetrico.cifrar(args[0]+"\\"+nombreFicheroClave, args[0]+"\\"+mensaje, args[0]+"\\"+nombreFicheroCifrado);
 								break;
 							case 3:
 								/*completar acciones*/
