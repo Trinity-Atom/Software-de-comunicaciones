@@ -24,12 +24,17 @@ import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.util.encoders.Hex;
 
 /**
- * @author Salvador
- *
+ * CLASE SIMETRICO
+ * Implementa todos los métodos necesarios para generar clave, cifrar y descifrar con algoritmo Twofish simétrico.
+ * 
+ * @author Salvador Fdez
+ * @author Ivan Perez
  */
 public class Simetrico {
-	// Variables del algoritmo
+	// VARIABLES DE CLAVE
 	int keySize = 256; 	// Tamaño de la clave en bits
+	// VARIABLES DEL CIFRADO
+	int blockSize = 16; 	// 16 bytes == 256 bits
 	
 	/**
 	 * CONSTRUCTOR
@@ -82,8 +87,19 @@ public class Simetrico {
 		pbc.init(true,param);
 		
 		// 5. Crear flujos E/S ficheros
-		InputStream input = new ByteArrayInputStream(key)
-		BufferedInputStream bufin = new BufferedInputStream();
+		BufferedInputStream filtroOrigen;
+		int leidos;
+		try {
+			filtroOrigen = new BufferedInputStream(new FileInputStream(rutaMensaje));
+			byte[] almacen = new byte[blockSize];
+			do {
+				leidos = filtroOrigen.readNBytes(almacen, 0, blockSize);
+			} while(leidos != -1);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return null;
 	}
 	public String descifrar(String mensajeCifrado,String clave){

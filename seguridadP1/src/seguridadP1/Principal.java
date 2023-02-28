@@ -9,6 +9,7 @@ package seguridadP1;
 
 import java.util.Scanner;
 
+import tipoCifrado.Asimetrico;
 import tipoCifrado.Simetrico;
 
 public class Principal {
@@ -19,11 +20,17 @@ public class Principal {
 		Scanner sc = new Scanner(System.in);
 		
 		/* completar declaracion de variables e instanciación de objetos */
+		// SIMETRICO
 		Simetrico simetrico = new Simetrico();
 		String nombreFicheroClave;
 		String mensaje;
 		String nombreFicheroCifrado;
 		String nombreFicheroDescifrado;
+		// ASIMETRICO
+		Asimetrico asimetrico = new Asimetrico();
+		String ficheroKp;
+		String ficheroKs;
+		String 
 		
 		do {
 			System.out.println("¿Qué tipo de criptografía desea utilizar?");
@@ -92,18 +99,28 @@ public class Principal {
 						switch(menu2){
 							case 1:
 								/*completar acciones*/
+								// Leer nombre fichero
+								System.out.println("Introduzca el nombre del fichero donde quieres guardar la clave publica: ");
+								ficheroKp = sc.next();
+								System.out.println("Introduzca el nombre del fichero donde quieres guardar la clave privada: ");
+								ficheroKs = sc.next();
+								asimetrico.generarClaves(ficheroKs,ficheroKp);
 							break;
 							case 2:
 								/*completar acciones*/
+								asimetrico.cifrar(nombreFicheroClave, mensaje, nombreFicheroDescifrado);
 							break;
 							case 3:
 								/*completar acciones*/
+								asimetrico.descifrar(nombreFicheroClave, nombreFicheroCifrado, nombreFicheroDescifrado);
 							break;
 							case 4:
 								/*completar acciones*/
+								asimetrico.firmar(ficheroKs, ficheroMensaje, ficheroFirmado);
 							break;
 							case 5:
 								/*completar acciones*/
+								asimetrico.verificarFirma(ficheroKp, ficheroMensaje, ficheroFirmado)
 							break;
 						}
 					} while(menu2 != 0);
