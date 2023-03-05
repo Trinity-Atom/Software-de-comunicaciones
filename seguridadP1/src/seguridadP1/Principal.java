@@ -20,17 +20,22 @@ public class Principal {
 		Scanner sc = new Scanner(System.in);
 		
 		/* completar declaracion de variables e instanciación de objetos */
+		// VARIABLES COMPARTIDAS
+		String nombreFicheroClave = null;
+		String mensaje = null;
 		// SIMETRICO
 		Simetrico simetrico = new Simetrico();
-		String nombreFicheroClave;
-		String mensaje;
 		String nombreFicheroCifrado;
 		String nombreFicheroDescifrado;
 		// ASIMETRICO
 		Asimetrico asimetrico = new Asimetrico();
-		String ficheroKp;
-		String ficheroKs;
-		String 
+		String ficheroKp = null;
+		String ficheroKs = null;
+		String ficheroMensaje = null;
+		String ficheroFirmado = null;
+		String ficheroCifrado = null;
+		String ficheroDescifrado = null;
+		String respuesta = null;
 		
 		do {
 			System.out.println("¿Qué tipo de criptografía desea utilizar?");
@@ -104,23 +109,27 @@ public class Principal {
 								ficheroKp = sc.next();
 								System.out.println("Introduzca el nombre del fichero donde quieres guardar la clave privada: ");
 								ficheroKs = sc.next();
-								asimetrico.generarClaves(ficheroKs,ficheroKp);
+								asimetrico.generarClaves(args[0]+"\\"+ficheroKs,args[0]+"\\"+ficheroKp);
 							break;
 							case 2:
 								/*completar acciones*/
-								asimetrico.cifrar(nombreFicheroClave, mensaje, nombreFicheroDescifrado);
+								System.out.println("Escribe la clave con la que quieres cifrar [privada/publica]");
+								respuesta = sc.next();
+								asimetrico.cifrar(args[0]+"\\"+nombreFicheroClave, args[0]+"\\"+mensaje, args[0]+"\\"+ficheroCifrado,respuesta);
 							break;
 							case 3:
 								/*completar acciones*/
-								asimetrico.descifrar(nombreFicheroClave, nombreFicheroCifrado, nombreFicheroDescifrado);
+								System.out.println("Escribe la clave con la que quieres cifrar [privada/publica]");
+								respuesta = sc.next();
+								asimetrico.descifrar(args[0]+"\\"+nombreFicheroClave, args[0]+"\\"+mensaje, args[0]+"\\"+ficheroDescifrado,respuesta);
 							break;
 							case 4:
 								/*completar acciones*/
-								asimetrico.firmar(ficheroKs, ficheroMensaje, ficheroFirmado);
+								asimetrico.firmar(args[0]+"\\"+ficheroKs, args[0]+"\\"+ficheroMensaje, args[0]+"\\"+ficheroFirmado);
 							break;
 							case 5:
 								/*completar acciones*/
-								asimetrico.verificarFirma(ficheroKp, ficheroMensaje, ficheroFirmado)
+								asimetrico.verificarFirma(args[0]+"\\"+ficheroKp, args[0]+"\\"+ficheroMensaje, args[0]+"\\"+ficheroFirmado);
 							break;
 						}
 					} while(menu2 != 0);

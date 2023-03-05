@@ -17,11 +17,12 @@ import java.security.SecureRandom;
 import org.bouncycastle.crypto.CipherKeyGenerator;
 import org.bouncycastle.crypto.KeyGenerationParameters;
 import org.bouncycastle.crypto.engines.TwofishEngine;
-import org.bouncycastle.crypto.modes.PaddedBlockCipher;
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.util.encoders.Hex;
+
+import ioManagement.FileManager;
 
 /**
  * CLASE SIMETRICO
@@ -31,6 +32,7 @@ import org.bouncycastle.util.encoders.Hex;
  * @author Ivan Perez
  */
 public class Simetrico {
+	FileManager manager;
 	// VARIABLES DE CLAVE
 	int keySize = 256; 	// Tamaño de la clave en bits
 	// VARIABLES DEL CIFRADO
@@ -42,7 +44,9 @@ public class Simetrico {
 	 * @throws NoSuchAlgorithmException
 	 * @throws NoSuchProviderException
 	 */
-	public Simetrico () {}
+	public Simetrico () {
+		manager = new FileManager();
+	}
 	
 	/**
 	 * METODO GENERAR CLAVE
@@ -66,14 +70,14 @@ public class Simetrico {
 			// 4. Convertir clave a hexadecimal
 			byte[] hexKey = Hex.encode(key);
 			// 5. Almacenar clave en fichero
-			escribirFichero(rutaFicheroClave,hexKey);
+			manager.escribirFichero(rutaFicheroClave,hexKey);
 			return true;
 	}
 
 	public String cifrar(String rutaFicheroClave, String rutaMensaje,String rutaFicheroCifrado){
 		
 		// 1. Leer clave y decodificar Hex a bin
-		byte[] hexKey = leerFichero(rutaFicheroClave);
+		byte[] hexKey = manager.leerFichero(rutaFicheroClave);
 		byte[] key = Hex.decode(hexKey);
 		
 		// 2. Generar parámetros y cargar la clave
@@ -105,57 +109,5 @@ public class Simetrico {
 	public String descifrar(String mensajeCifrado,String clave){
 		String mensajeEnClaro="";
 		return mensajeEnClaro;
-	}
-	
-	/**
-	 * METODO ESCRIBIR FICHERO
-	 * Este método se encarga de escribir un Fichero
-	 * @param rutaFichero 	Path del fichero que se quiere escribir
-	 * @param mensaje		Array de bytes que se quiere escribir
-	 * @return				Retorna true si todo ha ido bien y false si no se ha escrito correctamente
-	 */
-	private boolean escribirFichero(String rutaFichero,byte[] mensaje) {
-		FileOutputStream salida = null;
-		try {
-			salida = new FileOutputStream(rutaFichero);
-			salida.write(mensaje);
-			return true;
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return false;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		} finally {
-			if (salida != null)
-				try {
-					salida.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-					return false;
-				}
-		}
-	}
-	
-	/**
-	 * METODO LEER FICHERO
-	 * Este método se encarga de leer el contenido de un fichero.
-	 * 
-	 * @param rutaFichero	Path del fichero que se quiere leer
-	 * @return				Retorna el contenido del fichero (array de bytes) o null si este está vacío o se produce una excepcion.
-	 */
-	private byte[] leerFichero(String rutaFichero) {
-		try {
-			FileInputStream entrada = new FileInputStream(rutaFichero);
-			byte [] contenidoFichero = entrada.readAllBytes();
-			entrada.close();
-			return contenidoFichero;
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return null;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
 	}
 }
