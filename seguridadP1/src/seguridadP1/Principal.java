@@ -28,7 +28,7 @@ public class Principal {
 		String nombreFicheroCifrado;
 		String nombreFicheroDescifrado;
 		// ASIMETRICO
-		Asimetrico asimetrico = new Asimetrico();
+		Asimetrico asimetrico = new Asimetrico(args[0]);
 		String ficheroKp = null;
 		String ficheroKs = null;
 		String ficheroMensaje = null;

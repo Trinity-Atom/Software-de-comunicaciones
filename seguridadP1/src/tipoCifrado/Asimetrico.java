@@ -4,9 +4,11 @@
 package tipoCifrado;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -41,8 +43,10 @@ import ioManagement.GuardarFormatoPEM;
  */
 public class Asimetrico {
 	FileManager fmanager;
-	public Asimetrico() {
+	String pathFiles;
+	public Asimetrico(String pathFiles) {
 		fmanager = new FileManager();
+		this.pathFiles=pathFiles;
 	}
 
 	/**
@@ -140,13 +144,12 @@ public class Asimetrico {
 	 * Este método descifra un archivo contenido en rutaMensaje con la clave contenida en rutaFicheroClave
 	 * 
 	 * @param rutaFicheroClave		Ruta del fichero que contiene la clave
-	 * @param rutaMensaje			Path del fichero que contiene el mensaje	
-	 * @param rutaFicheroCifrado	Path del fichero que contiene el mensaje cifrado
+	 * @param rutaMensajeCifrado	Path del fichero que contiene el mensaje cifrado	
+	 * @param rutaFicheroDescifrado	Path del fichero donde se guardará el mensaje descifrado
 	 * @param usesPrivateKey		Descifra con la privada = true. Cifra con la publica = false
 	 * @return						Array de bytes que contiene el mensaje descifrado
 	 */
-	public byte[] descifrar(String rutaFicheroClave, String rutaMensaje, String rutaFicheroCifrado,String tipo) {
-		byte[] datosCifrados = null;
+	public byte[] descifrar(String rutaFicheroClave, String rutaMensajeCifrado, String rutaFicheroDescifrado,String tipo) {
 		try {
 			// 1. Leer el modulo y el exponente de la clave
 			BufferedReader lectorClave = new BufferedReader(new FileReader(rutaFicheroClave));
@@ -154,18 +157,23 @@ public class Asimetrico {
 			BigInteger exponente = new BigInteger(Hex.decode(lectorClave.readLine()));
 			lectorClave.close();
 			
-			// 2. Generación parámetros para inicializar el cifrador
+			// 2. Generación parámetros para inicializar el descifrador
 			RSAKeyParameters parametros = new RSAKeyParameters(tipo.equals("privada"), modulo, exponente);
 			
-			// 3. Instanciar el cifrador
-			AsymmetricBlockCipher cifrador = new PKCS1Encoding(new RSAEngine());
+			// 3. Instanciar el descifrador
+			AsymmetricBlockCipher descifrador = new PKCS1Encoding(new RSAEngine());
 			
 			// 4. Inicializarlo false
-			cifrador.init(false,parametros);
+			descifrador.init(false,parametros);
 			
-			// 5. Leer bloques del fichero a cifrar e ir cifrando
-			byte[] datosLeidos = fmanager.leerFichero(rutaMensaje);
-			datosCifrados = cifrador.processBlock(datosLeidos, 0, datosLeidos.length);
+			// 5. Leer bloques del fichero a descifrar e ir descifrando
+			BufferedInputStream lectura = new BufferedInputStream(new FileInputStream(rutaMensajeCifrado));
+			BufferedOutputStream escritura = new BufferedOutputStream(new FileOutputStream(rutaFicheroDescifrado));
+			
+			byte[] datosLeidos = new byte[descifrador.getInputBlockSize()];
+			byte[] datosDescifrados = descifrador.processBlock(datosLeidos, 0, datosLeidos.length);
+			
+			int leidos = lectura.read(datosLeidos, 0, datosLeidos.length);
 			
 			
 		} catch (FileNotFoundException e) {
@@ -175,7 +183,7 @@ public class Asimetrico {
 		} catch (InvalidCipherTextException e) {
 			e.printStackTrace();
 		}
-		return datosCifrados;
+		return null;
 	}
 
 	public void firmar(String rutaClavePrivada, String rutaFicheroAFirmar, String rutaFicheroFirmado) {
@@ -183,34 +191,41 @@ public class Asimetrico {
 		Digest resumen = new SHA3Digest();
 		
 		// 2. Generar el resumen: los bloques de lectura son del mismo tamaño que el resumen
-		//Bucle de lectura de bloques del fichero:
-			BufferedInputStream filtroOrigen;
+		int blockSize = resumen.getDigestSize();
+		BufferedInputStream entrada;
+		BufferedOutputStream salida;
 		int leidos;
 		try {
-			filtroOrigen = new BufferedInputStream(new FileInputStream(rutaFicheroAFirmar));
+			entrada = new BufferedInputStream(new FileInputStream(rutaFicheroAFirmar));
+			salida = new BufferedOutputStream(new FileOutputStream(pathFiles+"resumen.txt"));
 			byte[] almacen = new byte[blockSize];
+			//Bucle de lectura de bloques del fichero:
 			do {
-				leidos = filtroOrigen.readNBytes(almacen, 0, blockSize);
+				leidos = entrada.readNBytes(almacen, 0, blockSize);
+				//Método update a (partir de cada bloque leído va actualizando el resumen)
+				if(leidos != -1) {
+					resumen.update(almacen, 0, almacen.length);
+					salida.write(almacen);
+				}
 			} while(leidos != -1);
+			//Método doFinal (fuera del bucle. Genera resumen final)
+			resumen.doFinal(almacen,0);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-			//Método update (a partir de cada bloque leído va
-			resumen.update(byte[] in, int inOff, int len);
-			//actualizando el resumen)
-			//Método doFinal (fuera del bucle. Genera resumen final)
-			//Escribir el resumen en el fichero
 
 		// 3. cifrar el fichero que contiene el resumen
-		this.cifrar(rutaFicheroKp, "resumen.txt", rutaFicheroFirma, "privada");
+		this.cifrar(rutaClavePrivada, pathFiles+"resumen.txt", rutaFicheroFirmado, "privada");
 	}
 
 	public boolean verificarFirma(String ficheroKp, String ficheroMensaje, String ficheroFirmado) {
-		// 1.
-		this.descifrar(ficheroKp, ficheroFirma, "resumenDescifrado.txt", "publica");
-		// 2. generar resumen del mensaje en claro
+		boolean firmaValida = false;
+		// 1. Descifrar el fichero de la firma para obtener el resumen
+		this.descifrar(ficheroKp, ficheroFirmado, "resumenDescifrado.txt", "publica");
+		// 2. Generar resumen del mensaje en claro
+		return firmaValida;
 	}
 	
 	

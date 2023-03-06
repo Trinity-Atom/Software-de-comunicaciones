@@ -74,6 +74,12 @@ public class Simetrico {
 			return true;
 	}
 
+	/**
+	 * @param rutaFicheroClave		Path del fichero donde se encuentra la clave con la que se va a cifrar el mensaje
+	 * @param rutaMensaje			Path del fichero donde se encuentra el mensaje en claro
+	 * @param rutaFicheroCifrado	Path del fichero donde se va a guardar el mensaje cifrado
+	 * @return
+	 */
 	public String cifrar(String rutaFicheroClave, String rutaMensaje,String rutaFicheroCifrado){
 		
 		// 1. Leer clave y decodificar Hex a bin
@@ -91,13 +97,13 @@ public class Simetrico {
 		pbc.init(true,param);
 		
 		// 5. Crear flujos E/S ficheros
-		BufferedInputStream filtroOrigen;
+		BufferedInputStream filtroLectura;
 		int leidos;
 		try {
-			filtroOrigen = new BufferedInputStream(new FileInputStream(rutaMensaje));
+			filtroLectura = new BufferedInputStream(new FileInputStream(rutaMensaje));
 			byte[] almacen = new byte[blockSize];
 			do {
-				leidos = filtroOrigen.readNBytes(almacen, 0, blockSize);
+				leidos = filtroLectura.readNBytes(almacen, 0, pbc.getBlockSize());
 			} while(leidos != -1);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
